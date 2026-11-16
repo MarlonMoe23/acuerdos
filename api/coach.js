@@ -63,7 +63,7 @@ const RELACIONES = {
 function enfoqueTxt(enfoque) {
   const n = parseInt(enfoque, 10);
   if (!n || n < 1 || n > 13) {
-    return 'Evalúa con todos los acuerdos, priorizando los más relevantes para ese momento.';
+    return 'MODO LIBRE: no hay un acuerdo de foco. Evalúa con todos los acuerdos y detecta cuáles aplicó bien el usuario y cuáles le faltaron o rompió.';
   }
   return `Pon el foco principal en el acuerdo ${n}: "${TITULOS[n - 1]}". Menciona otros acuerdos solo si es muy importante.`;
 }
@@ -135,7 +135,7 @@ module.exports = async function handler(req, res) {
 La otra persona es ${relacion}.
 Intensidad emocional: ${corto(body.intensidad, 20) || 'media'}.
 Tema: ${corto(body.tema, 300) || 'elige tú algo cotidiano y creíble de la vida en Ecuador'}.
-${enfoque} Elige una situación donde ese enfoque sea útil de practicar.
+${enfoque} Elige una situación donde valga la pena practicar (en modo libre, una situación variada y cotidiana).
 Devuelve este JSON:
 {"nombre": "nombre ficticio corto de la otra persona",
  "escenario": "2 a 4 frases SECRETAS: qué le pasa por dentro, qué siente, qué necesita (en términos de CNV) y qué la haría cerrarse",
@@ -165,7 +165,9 @@ Devuelve este JSON:
    "puntaje": número del 1 al 10,
    "bien": "1 o 2 frases concretas sobre lo que hizo bien, citando sus palabras",
    "mejorar": "1 o 2 frases: qué acuerdo faltó o se rompió y por qué",
-   "sugerencia": "versión mejorada y corta, en el estilo del usuario (informal, ecuatoriano, con sus emojis si los usa)"},
+   "sugerencia": "versión mejorada y corta, en el estilo del usuario (informal, ecuatoriano, con sus emojis si los usa)",
+   "usados": [números de los acuerdos que aplicó bien en esta respuesta, máximo 4],
+   "faltaron": [números de los acuerdos que le faltaron o rompió en esta respuesta, máximo 3]},
  "respuesta_otra": "siguiente mensaje de la otra persona",
  "alerta": ""}`;
         break;
@@ -184,6 +186,8 @@ Haz un cierre breve y útil. Devuelve este JSON:
  "a_practicar": "2 o 3 frases sobre el patrón principal a mejorar y cómo",
  "lo_que_sentia": "revela en palabras simples qué le pasaba a la otra persona y si se sintió escuchada",
  "frase": "una frase corta para recordar",
+ "usados": [números de los acuerdos que más aplicó en toda la conversación, máximo 4],
+ "faltaron": [números de los acuerdos que más le faltaron, máximo 3],
  "alerta": ""}`;
         break;
       }
@@ -206,6 +210,8 @@ Devuelve este JSON:
  "bien": "1 o 2 frases sobre lo que está bien",
  "mejorar": "1 o 2 frases sobre qué mejorar y por qué",
  "sugerencia": "versión mejorada lista para enviar, con la voz y el estilo del usuario",
+ "usados": [números de los acuerdos que aplica bien el borrador, máximo 4],
+ "faltaron": [números de los acuerdos que le faltan o rompe el borrador, máximo 3],
  "alerta": ""}`;
         break;
       }

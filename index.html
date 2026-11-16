@@ -61,6 +61,10 @@
   .alerta{background:#fdecea;color:#7a1f14;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:.92em}
   @media (prefers-color-scheme: dark){.alerta{background:#3a1f1b;color:#ffd2ca}}
   .err{color:var(--low);font-weight:600;margin-top:10px}
+  .chips{margin:4px 0 8px}
+  .chip{display:inline-block;border-radius:20px;padding:3px 10px;font-size:.8em;margin:0 6px 6px 0;line-height:1.35}
+  .c-ok{background:#e3f4ea;color:#1f5e3a}.c-no{background:#fbe9e6;color:#7a2a1f}
+  @media (prefers-color-scheme: dark){.c-ok{background:#1f3a2b;color:#b5ecc9}.c-no{background:#3a2420;color:#ffc9bf}}
   .tag{display:inline-block;background:var(--soft);color:var(--acc);border-radius:20px;padding:3px 12px;font-size:.8em;margin:0 6px 6px 0}
 
   .stat{display:flex;gap:10px;margin-bottom:14px}
@@ -238,10 +242,18 @@ $('lista').innerHTML = ACUERDOS.map(([t, parts], i) =>
 
 /* Selects de enfoque */
 document.querySelectorAll('.sel-enf').forEach(s => {
-  s.innerHTML = `<option value="todos">Todos los acuerdos</option>` +
-    ACUERDOS.map(([t], i) => `<option value="${i+1}" ${i===2?'selected':''}>${i+1}. ${esc(t)}</option>`).join('');
+  s.innerHTML = `<option value="libre" selected>🆓 Libre</option>` +
+    ACUERDOS.map(([t], i) => `<option value="${i+1}">${i+1}. ${esc(t)}</option>`).join('');
 });
-const enfTxt = v => v === 'todos' ? 'Todos los acuerdos' : `Acuerdo ${v}`;
+const enfTxt = v => v === 'libre' ? 'Libre' : `Acuerdo ${v}`;
+
+/* Etiquetas de acuerdos usados / faltantes */
+function chips(e){
+  const lista = (a, ok) => (Array.isArray(a) ? a : []).map(Number).filter(n => n >= 1 && n <= 13)
+    .map(n => `<span class="chip ${ok ? 'c-ok' : 'c-no'}">${ok ? '✅' : '❌'} ${n}. ${esc(ACUERDOS[n-1][0])}</span>`).join('');
+  const h = lista(e.usados, true) + lista(e.faltaron, false);
+  return h ? `<div class="chips">${h}</div>` : '';
+}
 
 /* Pestañas */
 document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => {
@@ -315,7 +327,7 @@ function addMsg(rol, texto){
 function addEval(e){
   const d = document.createElement('div');
   d.className = 'eval';
-  d.innerHTML = `${scoreBadge(e.puntaje)}
+  d.innerHTML = `${scoreBadge(e.puntaje)}${chips(e)}
     <p><b>Bien:</b> ${esc(e.bien)}</p>
     <p><b>Mejorar:</b> ${esc(e.mejorar)}</p>
     <details><summary>Ver versión sugerida</summary><div class="sug">${esc(e.sugerencia)}</div></details>`;
@@ -377,7 +389,7 @@ $('p-end').onclick = async () => {
       escenario: P.escenario, historial: P.historial});
     $('p-input').classList.add('hidden'); btn.parentElement.classList.add('hidden');
     $('p-sum').innerHTML = `<section class="card" style="margin-top:16px">
-      <h3>Resumen de la práctica</h3>${scoreBadge(d.puntaje_global)}
+      <h3>Resumen de la práctica</h3>${scoreBadge(d.puntaje_global)}${chips(d)}
       <p><b style="color:var(--acc)">Fortalezas:</b> ${esc(d.fortalezas)}</p>
       <p><b style="color:var(--acc)">A practicar:</b> ${esc(d.a_practicar)}</p>
       <p><b style="color:var(--acc)">Lo que sentía ${esc(P.nombre)}:</b> ${esc(d.lo_que_sentia)}</p>
@@ -402,7 +414,7 @@ $('r-go').onclick = async () => {
     const P4 = ['¿Valida o solo calma mi incomodidad?', '¿Opción o exigencia?', '¿Se sentiría visto o presionado?', '¿Quién está escribiendo?'];
     const pr = Array.isArray(d.preguntas) ? d.preguntas : [];
     $('r-out').innerHTML = `<section class="card">
-      ${alertaHtml(d.alerta)}${scoreBadge(d.puntaje)}
+      ${alertaHtml(d.alerta)}${scoreBadge(d.puntaje)}${chips(d)}
       <p><b style="color:var(--acc)">Bien:</b> ${esc(d.bien)}</p>
       <p><b style="color:var(--acc)">Mejorar:</b> ${esc(d.mejorar)}</p>
       <p><b style="color:var(--acc)">Desde dónde escribes:</b> ${esc(d.parte)}</p>
