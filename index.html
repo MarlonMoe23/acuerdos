@@ -2,112 +2,447 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2F6B5E">
 <title>Los 13 acuerdos del Espacio Seguro</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <style>
-  :root{--acc:#2F6B5E;--bg:#FAF8F4;--card:#fff;--txt:#222;--muted:#555;--soft:#E7F0ED}
+  :root{--acc:#2F6B5E;--bg:#FAF8F4;--card:#fff;--txt:#222;--muted:#5a5a5a;--soft:#E7F0ED;--line:#e3e0da;
+    --ok:#2e7d4f;--mid:#b7791f;--low:#b44a3a}
   @media (prefers-color-scheme: dark){
-    :root{--acc:#7CC4B2;--bg:#141816;--card:#1E2422;--txt:#ECECEC;--muted:#B8B8B8;--soft:#22302C}
+    :root{--acc:#7CC4B2;--bg:#141816;--card:#1E2422;--txt:#ECECEC;--muted:#B8B8B8;--soft:#22302C;--line:#2c3533;
+      --ok:#6fcf97;--mid:#f2c94c;--low:#eb8f7f}
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{margin:0;background:var(--bg);color:var(--txt);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    font-size:20px;line-height:1.55}
-  main{max-width:640px;margin:0 auto;padding:28px 18px 60px}
-  h1{color:var(--acc);text-align:center;font-size:1.6em;line-height:1.25;margin:8px 0 26px}
-  .card{background:var(--card);border-radius:16px;padding:18px 18px 14px;margin:0 0 16px;
-    box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .card h2{display:flex;gap:12px;align-items:flex-start;margin:0 0 8px;font-size:1.08em;line-height:1.3;color:var(--acc)}
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:19px;line-height:1.5}
+  main{max-width:640px;margin:0 auto;padding:18px 16px calc(96px + env(safe-area-inset-bottom))}
+  .view{display:none}.view.active{display:block}
+  h1{color:var(--acc);text-align:center;font-size:1.5em;line-height:1.25;margin:10px 0 22px}
+  h2.vt{color:var(--acc);font-size:1.3em;margin:6px 0 6px}
+  .sub{color:var(--muted);margin:0 0 16px;font-size:.92em}
+  .card{background:var(--card);border-radius:16px;padding:16px;margin:0 0 14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .card h3{display:flex;gap:12px;align-items:flex-start;margin:0 0 8px;font-size:1.05em;line-height:1.3;color:var(--acc)}
   .n{flex:0 0 auto;min-width:1.7em;height:1.7em;border-radius:50%;background:var(--acc);color:var(--card);
-    display:inline-flex;align-items:center;justify-content:center;font-size:.8em;margin-top:-1px}
+    display:inline-flex;align-items:center;justify-content:center;font-size:.8em}
   p{margin:0 0 8px}
   .q{font-style:italic;color:var(--muted);border-left:4px solid var(--acc);background:var(--soft);
     padding:8px 12px;border-radius:0 10px 10px 0;margin:6px 0 10px}
-  .sec{margin-top:30px}
-  .sec h3{color:var(--acc);font-size:1.15em;margin:0 0 12px}
-  ol.ask{padding-left:1.3em;margin:0}
-  ol.ask li{margin-bottom:12px}
-  .rec{background:var(--soft);border-radius:16px;padding:18px}
-  .rec p{margin-bottom:10px}
+  .rec{background:var(--soft);border-radius:16px;padding:16px;margin-top:8px}
+  ol.ask{padding-left:1.3em;margin:0}ol.ask li{margin-bottom:10px}
+
+  label{display:block;font-weight:600;margin:12px 0 6px;font-size:.95em}
+  select,input,textarea{width:100%;font:inherit;font-size:.95em;color:var(--txt);background:var(--card);
+    border:1.5px solid var(--line);border-radius:12px;padding:12px}
+  textarea{min-height:110px;resize:vertical}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--acc)}
+  .btn{display:block;width:100%;font:inherit;font-weight:700;border:0;border-radius:14px;padding:14px;margin-top:14px;
+    background:var(--acc);color:var(--card);cursor:pointer}
+  .btn.sec{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+  .btn:disabled{opacity:.55}
+  .row{display:flex;gap:10px}.row .btn{margin-top:10px}
+
+  .chat{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+  .msg{max-width:88%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-wrap:break-word}
+  .msg.otra{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg.yo{align-self:flex-end;background:var(--soft);border-bottom-right-radius:4px}
+  .msg .who{display:block;font-size:.75em;font-weight:700;color:var(--acc);margin-bottom:2px}
+  .typing{align-self:flex-start;color:var(--muted);font-style:italic;font-size:.9em}
+
+  .eval{border-radius:14px;padding:12px 14px;background:var(--card);border:1.5px dashed var(--line);font-size:.92em}
+  .score{display:inline-block;font-weight:800;border-radius:10px;padding:2px 10px;margin-bottom:6px;color:#fff}
+  .s-ok{background:var(--ok)}.s-mid{background:var(--mid)}.s-low{background:var(--low)}
+  .eval b{color:var(--acc)}
+  details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-weight:600}
+  .sug{background:var(--soft);border-radius:10px;padding:10px;margin-top:8px;white-space:pre-wrap}
+  .alerta{background:#fdecea;color:#7a1f14;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:.92em}
+  @media (prefers-color-scheme: dark){.alerta{background:#3a1f1b;color:#ffd2ca}}
+  .err{color:var(--low);font-weight:600;margin-top:10px}
+  .tag{display:inline-block;background:var(--soft);color:var(--acc);border-radius:20px;padding:3px 12px;font-size:.8em;margin:0 6px 6px 0}
+
+  .stat{display:flex;gap:10px;margin-bottom:14px}
+  .stat div{flex:1;background:var(--card);border-radius:14px;padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .stat strong{display:block;font-size:1.6em;color:var(--acc)}
+  .hist{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .hist small{color:var(--muted)}
+
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom);z-index:5}
+  nav.tabs button{flex:1;font:inherit;font-size:.72em;background:none;border:0;color:var(--muted);padding:8px 2px 10px;cursor:pointer}
+  nav.tabs button span{display:block;font-size:1.6em;line-height:1.2}
+  nav.tabs button.on{color:var(--acc);font-weight:700}
+
+  .dlg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:10;padding:20px}
+  .dlg.hidden{display:none}
+  .dlg .box{background:var(--card);border-radius:18px;padding:20px;width:100%;max-width:380px}
+  .hidden{display:none}
 </style>
 </head>
 <body>
 <main>
-  <h1>Los 13 acuerdos<br>del Espacio Seguro</h1>
 
-  <section class="card"><h2><span class="n">1</span>Llega en calma</h2>
-    <p>Antes de responder, revisa desde dónde hablas. Si una parte de ti está ansiosa o quiere arreglar algo, atiéndela primero.</p></section>
-
-  <section class="card"><h2><span class="n">2</span>Escucha para entender, no para responder</h2>
-    <p>No prepares tu respuesta mientras la otra persona habla. Escucha de verdad.</p></section>
-
-  <section class="card"><h2><span class="n">3</span>Valida y refleja antes de resolver</h2>
-    <p>No basta con decir «entiendo», «tiene sentido», «me imagino». Devuélvele lo que escuchaste:</p>
-    <p class="q">«Suena a que te sentiste sola en eso».</p></section>
-
-  <section class="card"><h2><span class="n">4</span>Pregunta antes de aconsejar</h2>
-    <p class="q">«¿Quieres que te escuche, que te ayude a pensar, o solo que te acompañe?»</p>
-    <p>No eres autoridad.</p></section>
-
-  <section class="card"><h2><span class="n">5</span>Ten curiosidad, no supongas</h2>
-    <p class="q">«¿Qué significa eso para ti?»</p>
-    <p>vale más que cualquier interpretación tuya.</p></section>
-
-  <section class="card"><h2><span class="n">6</span>Ofrece opciones, no exigencias</h2>
-    <p class="q">«¿Prefieres que te escriba en unos días o que te deje espacio?»</p>
-    <p>Le devuelves el control.</p></section>
-
-  <section class="card"><h2><span class="n">7</span>No minimices su dolor</h2>
-    <p>Nunca digas «ya pasará» ni «otros están peor». Mejor:</p>
-    <p class="q">«¿Cómo estás hoy con esto?»</p></section>
-
-  <section class="card"><h2><span class="n">8</span>No diagnostiques ni des consejos no pedidos</h2>
-    <p>No eres su médico, ni su jefe, ni su terapeuta. Eres su compañía.</p></section>
-
-  <section class="card"><h2><span class="n">9</span>Respeta el silencio, y no lo uses como castigo</h2>
-    <p>Un mensaje sin respuesta puede ser vida, cansancio o duelo. Y si algo te molesta, dilo con calma en vez de alejarte en silencio.</p></section>
-
-  <section class="card"><h2><span class="n">10</span>Habla desde tus necesidades, no desde el reproche</h2>
-    <p class="q">«Cuando pasa X, me siento Y, porque necesito Z. ¿Estarías dispuesta a…?»</p>
-    <p>«Yo siento…» en lugar de «Tú nunca…». Sin acusaciones, sin interrogatorios.</p></section>
-
-  <section class="card"><h2><span class="n">11</span>Cuida lo que te confían</h2>
-    <p>Lo que te comparte se queda contigo.</p></section>
-
-  <section class="card"><h2><span class="n">12</span>Repara cuando falles</h2>
-    <p class="q">«Creo que no te escuché bien antes. ¿Me lo cuentas otra vez?»</p>
-    <p>La confianza crece más con una reparación que con la perfección.</p></section>
-
-  <section class="card"><h2><span class="n">13</span>Cuídate a ti también. Presencia con autenticidad</h2>
-    <p>Estar disponible no es estar pegado al teléfono, ni sostener al otro olvidándote de ti. Ser confiable incluye conocer tus límites y decirlos con cariño.</p></section>
-
-  <section class="sec card">
-    <h3>Antes de enviar un mensaje, pregúntate:</h3>
-    <ol class="ask">
-      <li>¿Esto valida lo que ella siente o solo calma mi incomodidad?</li>
-      <li>¿Le estoy dando una opción o le estoy exigiendo una respuesta?</li>
-      <li>¿Si yo recibiera este mensaje, me sentiría visto o presionado?</li>
-      <li>¿Quién está escribiendo: yo en calma, o una parte mía que tiene una agenda?</li>
-    </ol>
+  <!-- ============ ACUERDOS ============ -->
+  <section id="v-acuerdos" class="view active">
+    <h1>Los 13 acuerdos<br>del Espacio Seguro</h1>
+    <div id="lista"></div>
+    <section class="card" style="margin-top:22px">
+      <h3>Antes de enviar un mensaje, pregúntate:</h3>
+      <ol class="ask">
+        <li>¿Esto valida lo que ella siente o solo calma mi incomodidad?</li>
+        <li>¿Le estoy dando una opción o le estoy exigiendo una respuesta?</li>
+        <li>¿Si yo recibiera este mensaje, me sentiría visto o presionado?</li>
+        <li>¿Quién está escribiendo: yo en calma, o una parte mía que tiene una agenda?</li>
+      </ol>
+    </section>
+    <section class="rec">
+      <h3 style="color:var(--acc);margin:0 0 10px">Recuerda:</h3>
+      <p>No se trata de tener la respuesta perfecta.</p>
+      <p>Se trata de que la otra persona sienta que puede ser ella, sin miedo a ser juzgada, corregida o abandonada, y de que tú también puedas ser tú.</p>
+    </section>
   </section>
 
-  <section class="sec rec">
-    <h3 style="color:var(--acc);margin:0 0 12px">Recuerda:</h3>
-    <p>No se trata de tener la respuesta perfecta.</p>
-    <p>Se trata de que la otra persona sienta que puede ser ella, sin miedo a ser juzgada, corregida o abandonada, y de que tú también puedas ser tú.</p>
+  <!-- ============ PRACTICAR ============ -->
+  <section id="v-practicar" class="view">
+    <h2 class="vt">🎯 Practicar</h2>
+    <p class="sub">La IA hace de la otra persona. Tú respondes, recibes tu calificación y la conversación sigue según cómo respondiste.</p>
+
+    <div id="p-setup">
+      <label for="p-rel">¿Con quién quieres practicar?</label>
+      <select id="p-rel">
+        <option value="pareja">Pareja / persona que me gusta</option>
+        <option value="hijo">Hijo o hija</option>
+        <option value="amigo">Amigo o amiga</option>
+        <option value="familiar">Familiar</option>
+        <option value="trabajo">Trabajo</option>
+      </select>
+
+      <label for="p-enf">¿Qué acuerdo quieres practicar?</label>
+      <select id="p-enf" class="sel-enf"></select>
+
+      <label for="p-int">Intensidad emocional</label>
+      <select id="p-int">
+        <option value="suave">Suave</option>
+        <option value="media" selected>Media</option>
+        <option value="fuerte">Fuerte</option>
+      </select>
+
+      <label for="p-tema">Tema (opcional)</label>
+      <input id="p-tema" placeholder="Ej: está cansado del trabajo, perdió a alguien…">
+
+      <button class="btn" id="p-start">Empezar práctica</button>
+      <div class="err" id="p-err0"></div>
+    </div>
+
+    <div id="p-run" class="hidden">
+      <div id="p-tags"></div>
+      <div class="chat" id="p-chat"></div>
+      <div id="p-input">
+        <label for="p-resp">Tu respuesta</label>
+        <textarea id="p-resp" placeholder="Escribe como si fuera WhatsApp…"></textarea>
+        <button class="btn" id="p-send">Enviar</button>
+      </div>
+      <div class="err" id="p-err"></div>
+      <div class="row">
+        <button class="btn sec" id="p-end">Terminar y ver resumen</button>
+      </div>
+      <div id="p-sum"></div>
+      <button class="btn sec hidden" id="p-new">Nueva práctica</button>
+    </div>
   </section>
+
+  <!-- ============ REAL ============ -->
+  <section id="v-real" class="view">
+    <h2 class="vt">💬 Revisar antes de enviar</h2>
+    <p class="sub">Pega lo que te dijeron, escribe tu respuesta y revísala antes de mandarla.</p>
+
+    <label for="r-dijo">Lo que te dijo</label>
+    <textarea id="r-dijo" placeholder="Pega aquí su mensaje…"></textarea>
+
+    <label for="r-ctx">Contexto (opcional)</label>
+    <input id="r-ctx" placeholder="Ej: es mi hijo, está con exámenes…">
+
+    <label for="r-enf">Enfoque</label>
+    <select id="r-enf" class="sel-enf"></select>
+
+    <label for="r-bor">Tu respuesta (borrador)</label>
+    <textarea id="r-bor" placeholder="Escribe primero tu propia respuesta…"></textarea>
+
+    <button class="btn" id="r-go">Revisar mi respuesta</button>
+    <div class="err" id="r-err"></div>
+    <div id="r-out" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ============ PROGRESO ============ -->
+  <section id="v-progreso" class="view">
+    <h2 class="vt">📈 Progreso</h2>
+    <p class="sub">Se guarda solo en este celular: fecha, tipo y puntaje. No se guardan los textos.</p>
+    <div class="stat">
+      <div><strong id="g-n">0</strong>sesiones</div>
+      <div><strong id="g-avg">–</strong>promedio últimas 10</div>
+    </div>
+    <div id="g-list"></div>
+    <button class="btn sec" id="g-clear">Borrar historial</button>
+  </section>
+
 </main>
+
+<nav class="tabs">
+  <button data-v="acuerdos" class="on"><span>📖</span>Acuerdos</button>
+  <button data-v="practicar"><span>🎯</span>Practicar</button>
+  <button data-v="real"><span>💬</span>Real</button>
+  <button data-v="progreso"><span>📈</span>Progreso</button>
+</nav>
+
+<div class="dlg hidden" id="pin-dlg">
+  <div class="box">
+    <h3 style="margin:0 0 6px;color:var(--acc)">PIN de acceso</h3>
+    <p class="sub" style="margin-bottom:8px">Escribe el PIN que configuraste en Vercel. Se guarda en este celular.</p>
+    <input id="pin-in" type="password" inputmode="numeric" autocomplete="off">
+    <div class="row">
+      <button class="btn sec" id="pin-no">Cancelar</button>
+      <button class="btn" id="pin-ok">Aceptar</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js');
+/* ---------- Datos de los acuerdos ---------- */
+const ACUERDOS = [
+  ['Llega en calma', [['b','Antes de responder, revisa desde dónde hablas. Si una parte de ti está ansiosa o quiere arreglar algo, atiéndela primero.']]],
+  ['Escucha para entender, no para responder', [['b','No prepares tu respuesta mientras la otra persona habla. Escucha de verdad.']]],
+  ['Valida y refleja antes de resolver', [['b','No basta con decir «entiendo», «tiene sentido», «me imagino». Devuélvele lo que escuchaste:'],['q','«Suena a que te sentiste sola en eso».']]],
+  ['Pregunta antes de aconsejar', [['q','«¿Quieres que te escuche, que te ayude a pensar, o solo que te acompañe?»'],['b','No eres autoridad.']]],
+  ['Ten curiosidad, no supongas', [['q','«¿Qué significa eso para ti?»'],['b','vale más que cualquier interpretación tuya.']]],
+  ['Ofrece opciones, no exigencias', [['q','«¿Prefieres que te escriba en unos días o que te deje espacio?»'],['b','Le devuelves el control.']]],
+  ['No minimices su dolor', [['b','Nunca digas «ya pasará» ni «otros están peor». Mejor:'],['q','«¿Cómo estás hoy con esto?»']]],
+  ['No diagnostiques ni des consejos no pedidos', [['b','No eres su médico, ni su jefe, ni su terapeuta. Eres su compañía.']]],
+  ['Respeta el silencio, y no lo uses como castigo', [['b','Un mensaje sin respuesta puede ser vida, cansancio o duelo. Y si algo te molesta, dilo con calma en vez de alejarte en silencio.']]],
+  ['Habla desde tus necesidades, no desde el reproche', [['q','«Cuando pasa X, me siento Y, porque necesito Z. ¿Estarías dispuesta a…?»'],['b','«Yo siento…» en lugar de «Tú nunca…». Sin acusaciones, sin interrogatorios.']]],
+  ['Cuida lo que te confían', [['b','Lo que te comparte se queda contigo.']]],
+  ['Repara cuando falles', [['q','«Creo que no te escuché bien antes. ¿Me lo cuentas otra vez?»'],['b','La confianza crece más con una reparación que con la perfección.']]],
+  ['Cuídate a ti también. Presencia con autenticidad', [['b','Estar disponible no es estar pegado al teléfono, ni sostener al otro olvidándote de ti. Ser confiable incluye conocer tus límites y decirlos con cariño.']]]
+];
+const REL_TXT = {pareja:'Pareja / me gusta', hijo:'Hijo/a', amigo:'Amigo/a', familiar:'Familiar', trabajo:'Trabajo'};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* Lista de acuerdos */
+$('lista').innerHTML = ACUERDOS.map(([t, parts], i) =>
+  `<section class="card"><h3><span class="n">${i+1}</span>${esc(t)}</h3>` +
+  parts.map(([k, x]) => `<p class="${k==='q'?'q':''}">${esc(x)}</p>`).join('') + `</section>`
+).join('');
+
+/* Selects de enfoque */
+document.querySelectorAll('.sel-enf').forEach(s => {
+  s.innerHTML = `<option value="todos">Todos los acuerdos</option>` +
+    ACUERDOS.map(([t], i) => `<option value="${i+1}" ${i===2?'selected':''}>${i+1}. ${esc(t)}</option>`).join('');
+});
+const enfTxt = v => v === 'todos' ? 'Todos los acuerdos' : `Acuerdo ${v}`;
+
+/* Pestañas */
+document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'v-' + b.dataset.v));
+  if (b.dataset.v === 'progreso') renderHist();
+  window.scrollTo(0, 0);
+});
+
+/* ---------- Almacenamiento seguro ---------- */
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+/* ---------- PIN ---------- */
+function askPin(){
+  return new Promise(res => {
+    $('pin-in').value = '';
+    $('pin-dlg').classList.remove('hidden');
+    setTimeout(() => $('pin-in').focus(), 50);
+    const done = v => { $('pin-dlg').classList.add('hidden'); $('pin-ok').onclick = $('pin-no').onclick = null; res(v); };
+    $('pin-ok').onclick = () => done($('pin-in').value.trim());
+    $('pin-no').onclick = () => done(null);
+  });
+}
+
+/* ---------- Llamada a la IA ---------- */
+async function api(payload){
+  let r;
+  try {
+    r = await fetch('/api/coach', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({...payload, pin: store.get('acuerdos_pin', '')})
     });
+  } catch { throw new Error('Sin conexión a internet. La práctica necesita internet.'); }
+  if (r.status === 401) {
+    const p = await askPin();
+    if (!p) throw new Error('Se necesita el PIN para usar la IA.');
+    store.set('acuerdos_pin', p);
+    return api(payload);
   }
+  const data = await r.json().catch(() => ({error: 'Respuesta inválida del servidor'}));
+  if (!r.ok || data.error) throw new Error(data.error || ('Error ' + r.status));
+  return data;
+}
+
+function scoreBadge(n){
+  n = Number(n) || 0;
+  const c = n >= 8 ? 's-ok' : n >= 5 ? 's-mid' : 's-low';
+  return `<span class="score ${c}">${n}/10</span>`;
+}
+const alertaHtml = a => a ? `<div class="alerta">⚠️ ${esc(a)}</div>` : '';
+
+function saveHist(item){
+  const h = store.get('acuerdos_hist', []);
+  h.unshift({...item, fecha: new Date().toISOString()});
+  store.set('acuerdos_hist', h.slice(0, 200));
+}
+
+/* ---------- PRACTICAR ---------- */
+let P = null;
+
+function addMsg(rol, texto){
+  const d = document.createElement('div');
+  d.className = 'msg ' + rol;
+  d.innerHTML = (rol === 'otra' ? `<span class="who">${esc(P.nombre)}</span>` : '') + esc(texto);
+  $('p-chat').appendChild(d);
+  d.scrollIntoView({behavior: 'smooth', block: 'end'});
+}
+function addEval(e){
+  const d = document.createElement('div');
+  d.className = 'eval';
+  d.innerHTML = `${scoreBadge(e.puntaje)}
+    <p><b>Bien:</b> ${esc(e.bien)}</p>
+    <p><b>Mejorar:</b> ${esc(e.mejorar)}</p>
+    <details><summary>Ver versión sugerida</summary><div class="sug">${esc(e.sugerencia)}</div></details>`;
+  $('p-chat').appendChild(d);
+}
+function typing(on){
+  let t = document.getElementById('typing');
+  if (on && !t){ t = document.createElement('div'); t.id = 'typing'; t.className = 'typing'; t.textContent = 'escribiendo…'; $('p-chat').appendChild(t); t.scrollIntoView({block:'end'}); }
+  if (!on && t) t.remove();
+}
+
+$('p-start').onclick = async () => {
+  const btn = $('p-start'); btn.disabled = true; btn.textContent = 'Preparando la situación…'; $('p-err0').textContent = '';
+  const cfg = {relacion: $('p-rel').value, enfoque: $('p-enf').value, intensidad: $('p-int').value, tema: $('p-tema').value.trim()};
+  try {
+    const d = await api({action: 'start', ...cfg});
+    P = {...cfg, nombre: d.nombre || 'Otra persona', escenario: d.escenario || '', historial: [], puntajes: []};
+    $('p-setup').classList.add('hidden'); $('p-run').classList.remove('hidden');
+    $('p-chat').innerHTML = ''; $('p-sum').innerHTML = '';
+    $('p-input').classList.remove('hidden'); $('p-end').parentElement.classList.remove('hidden'); $('p-new').classList.add('hidden');
+    $('p-tags').innerHTML = `<span class="tag">${esc(REL_TXT[cfg.relacion])}</span><span class="tag">${esc(enfTxt(cfg.enfoque))}</span><span class="tag">${esc(cfg.intensidad)}</span>`;
+    if (d.alerta) $('p-chat').insertAdjacentHTML('beforeend', alertaHtml(d.alerta));
+    P.historial.push({rol: 'otra', texto: d.mensaje});
+    addMsg('otra', d.mensaje);
+  } catch (e) { $('p-err0').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Empezar práctica';
+};
+
+$('p-send').onclick = async () => {
+  const txt = $('p-resp').value.trim();
+  if (!txt || !P) return;
+  const btn = $('p-send'); btn.disabled = true; $('p-err').textContent = '';
+  addMsg('yo', txt); $('p-resp').value = ''; typing(true);
+  try {
+    const d = await api({action: 'turn', relacion: P.relacion, enfoque: P.enfoque, nombre: P.nombre,
+      escenario: P.escenario, historial: P.historial, respuesta: txt});
+    typing(false);
+    P.historial.push({rol: 'yo', texto: txt});
+    const e = d.evaluacion || {};
+    P.puntajes.push(Number(e.puntaje) || 0);
+    addEval(e);
+    if (d.alerta) $('p-chat').insertAdjacentHTML('beforeend', alertaHtml(d.alerta));
+    if (d.respuesta_otra){ P.historial.push({rol: 'otra', texto: d.respuesta_otra}); addMsg('otra', d.respuesta_otra); }
+  } catch (e) {
+    typing(false);
+    $('p-chat').lastElementChild?.remove();   // quita tu mensaje para que puedas reenviarlo
+    $('p-resp').value = txt;
+    $('p-err').textContent = e.message;
+  }
+  btn.disabled = false;
+};
+
+$('p-end').onclick = async () => {
+  if (!P) return;
+  if (!P.historial.some(m => m.rol === 'yo')) { $('p-err').textContent = 'Responde al menos una vez antes de terminar.'; return; }
+  const btn = $('p-end'); btn.disabled = true; btn.textContent = 'Preparando resumen…'; $('p-err').textContent = '';
+  try {
+    const d = await api({action: 'summary', relacion: P.relacion, enfoque: P.enfoque, nombre: P.nombre,
+      escenario: P.escenario, historial: P.historial});
+    $('p-input').classList.add('hidden'); btn.parentElement.classList.add('hidden');
+    $('p-sum').innerHTML = `<section class="card" style="margin-top:16px">
+      <h3>Resumen de la práctica</h3>${scoreBadge(d.puntaje_global)}
+      <p><b style="color:var(--acc)">Fortalezas:</b> ${esc(d.fortalezas)}</p>
+      <p><b style="color:var(--acc)">A practicar:</b> ${esc(d.a_practicar)}</p>
+      <p><b style="color:var(--acc)">Lo que sentía ${esc(P.nombre)}:</b> ${esc(d.lo_que_sentia)}</p>
+      <p class="q">${esc(d.frase)}</p>${alertaHtml(d.alerta)}</section>`;
+    $('p-new').classList.remove('hidden');
+    saveHist({modo: 'Práctica', con: REL_TXT[P.relacion], enfoque: enfTxt(P.enfoque), puntaje: Number(d.puntaje_global) || 0});
+    $('p-sum').scrollIntoView({behavior: 'smooth'});
+  } catch (e) { $('p-err').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Terminar y ver resumen';
+};
+
+$('p-new').onclick = () => { P = null; $('p-run').classList.add('hidden'); $('p-setup').classList.remove('hidden'); window.scrollTo(0,0); };
+
+/* ---------- REAL ---------- */
+$('r-go').onclick = async () => {
+  const dijo = $('r-dijo').value.trim(), bor = $('r-bor').value.trim();
+  $('r-err').textContent = '';
+  if (!dijo || !bor) { $('r-err').textContent = 'Completa lo que te dijo y tu borrador.'; return; }
+  const btn = $('r-go'); btn.disabled = true; btn.textContent = 'Revisando…';
+  try {
+    const d = await api({action: 'real', dijo, borrador: bor, contexto: $('r-ctx').value.trim(), enfoque: $('r-enf').value});
+    const P4 = ['¿Valida o solo calma mi incomodidad?', '¿Opción o exigencia?', '¿Se sentiría visto o presionado?', '¿Quién está escribiendo?'];
+    const pr = Array.isArray(d.preguntas) ? d.preguntas : [];
+    $('r-out').innerHTML = `<section class="card">
+      ${alertaHtml(d.alerta)}${scoreBadge(d.puntaje)}
+      <p><b style="color:var(--acc)">Bien:</b> ${esc(d.bien)}</p>
+      <p><b style="color:var(--acc)">Mejorar:</b> ${esc(d.mejorar)}</p>
+      <p><b style="color:var(--acc)">Desde dónde escribes:</b> ${esc(d.parte)}</p>
+      <details><summary>Las 4 preguntas</summary><ol class="ask" style="margin-top:8px">
+        ${P4.map((q, i) => `<li><b>${q}</b><br>${esc(pr[i] || '')}</li>`).join('')}</ol></details>
+      <details open><summary>Versión sugerida</summary><div class="sug" id="r-sug">${esc(d.sugerencia)}</div></details>
+      <div class="row">
+        <button class="btn sec" id="r-copy">Copiar sugerencia</button>
+        <button class="btn sec" id="r-use">Editar desde la sugerencia</button>
+      </div></section>`;
+    $('r-copy').onclick = async () => {
+      try { await navigator.clipboard.writeText(d.sugerencia || ''); $('r-copy').textContent = '¡Copiado!'; }
+      catch { $('r-copy').textContent = 'No se pudo copiar'; }
+    };
+    $('r-use').onclick = () => { $('r-bor').value = d.sugerencia || ''; $('r-bor').focus(); $('r-bor').scrollIntoView({behavior:'smooth', block:'center'}); };
+    saveHist({modo: 'Real', con: '—', enfoque: enfTxt($('r-enf').value), puntaje: Number(d.puntaje) || 0});
+    $('r-out').scrollIntoView({behavior: 'smooth'});
+  } catch (e) { $('r-err').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Revisar mi respuesta';
+};
+
+/* ---------- PROGRESO ---------- */
+function renderHist(){
+  const h = store.get('acuerdos_hist', []);
+  $('g-n').textContent = h.length;
+  const last = h.slice(0, 10).map(x => x.puntaje).filter(n => n > 0);
+  $('g-avg').textContent = last.length ? (last.reduce((a, b) => a + b, 0) / last.length).toFixed(1) : '–';
+  $('g-list').innerHTML = h.length ? h.slice(0, 50).map(x => {
+    const f = new Date(x.fecha);
+    return `<section class="card hist"><div><b>${esc(x.modo)}</b> · ${esc(x.enfoque)}<br>
+      <small>${f.toLocaleDateString('es-EC')} ${f.toLocaleTimeString('es-EC', {hour:'2-digit', minute:'2-digit'})}${x.con && x.con !== '—' ? ' · ' + esc(x.con) : ''}</small></div>
+      ${scoreBadge(x.puntaje)}</section>`;
+  }).join('') : '<p class="sub">Aún no hay sesiones. ¡Empieza una práctica!</p>';
+}
+$('g-clear').onclick = () => { if (confirm('¿Borrar todo el historial?')) { store.set('acuerdos_hist', []); renderHist(); } };
+
+/* ---------- Service worker ---------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
 </script>
 </body>
 </html>
