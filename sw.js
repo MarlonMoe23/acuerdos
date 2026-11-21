@@ -1,5 +1,5 @@
 // Cambia este número cada vez que modifiques index.html para forzar la actualización
-const CACHE = 'acuerdos-v3';
+const CACHE = 'acuerdos-v4';
 const ARCHIVOS = [
   '/',
   '/index.html',

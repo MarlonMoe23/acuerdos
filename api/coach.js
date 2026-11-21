@@ -50,7 +50,7 @@ ${ACUERDOS}
 Escribes en español de Ecuador, cálido, claro y directo, sin tecnicismos innecesarios.
 Eres honesto: no inflas puntajes. Un 9 o 10 es solo para respuestas realmente excelentes.
 Si en algún mensaje aparecen señales de riesgo grave (ideas de suicidio, autolesión, violencia), indícalo en el campo "alerta" recomendando con calma buscar ayuda profesional o de emergencia; si no, deja "alerta" vacío.
-Responde SIEMPRE y SOLO con un objeto JSON válido, sin texto antes ni después, sin bloques de código.`;
+Entrega tu respuesta usando la herramienta \"responder\" con la estructura pedida. Dentro de los textos, para citar palabras usa comillas latinas «» en lugar de comillas dobles.`;
 
 const RELACIONES = {
   hijo: 'su hijo o hija (el usuario es su papá)',
@@ -82,10 +82,38 @@ function extraerJSON(texto) {
   const a = texto.indexOf('{');
   const b = texto.lastIndexOf('}');
   if (a === -1 || b === -1) throw new Error('La IA no devolvió un formato válido. Intenta de nuevo.');
-  return JSON.parse(texto.slice(a, b + 1));
+  const crudo = texto.slice(a, b + 1);
+  try { return JSON.parse(crudo); } catch {}
+  return JSON.parse(repararComillas(crudo));
 }
 
-async function llamarClaude(system, user) {
+// Repara comillas dobles sin escapar dentro de los textos (causa típica del error)
+function repararComillas(s) {
+  let out = '', dentro = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === '\\' && dentro) { out += c + (s[i + 1] || ''); i++; continue; }
+    if (c === '"') {
+      if (!dentro) { dentro = true; out += c; continue; }
+      // ¿cierra el texto? mira el siguiente carácter no vacío
+      let j = i + 1;
+      while (j < s.length && /\s/.test(s[j])) j++;
+      const sig = s[j];
+      if (sig === ',' || sig === '}' || sig === ']' || sig === ':' || sig === undefined) { dentro = false; out += c; }
+      else out += '\\"';
+      continue;
+    }
+    if (dentro && (c === '\n' || c === '\r')) { out += c === '\n' ? '\\n' : ''; continue; }
+    out += c;
+  }
+  return out;
+}
+
+// Los modelos Claude 5.5 "piensan" antes de responder por defecto. Ese pensamiento
+// gasta tokens (se cobran) y comparte el límite max_tokens con la respuesta.
+// Aquí lo reducimos: sin pensamiento previo (between_tools) y esfuerzo bajo.
+// Si algún modelo no acepta estas opciones, se reintenta automáticamente sin ellas.
+async function enviar(body) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -93,20 +121,67 @@ async function llamarClaude(system, user) {
       'x-api-key': process.env.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 1500,
-      system,
-      messages: [{ role: 'user', content: user }]
-    })
+    body: JSON.stringify(body)
   });
   const data = await r.json();
+  return { r, data };
+}
+
+// Pide la respuesta mediante una "herramienta", para que el JSON llegue bien formado.
+async function pedir(system, user, maxTokens, effort) {
+  const body = {
+    model: MODEL,
+    max_tokens: maxTokens,
+    system,
+    thinking: { type: 'between_tools' },
+    output_config: { effort: effort || 'low' },
+    tools: [{
+      name: 'responder',
+      description: 'Entrega la respuesta con exactamente la estructura JSON pedida.',
+      input_schema: { type: 'object', additionalProperties: true }
+    }],
+    tool_choice: { type: 'auto' },
+    messages: [{ role: 'user', content: user }]
+  };
+
+  let { r, data } = await enviar(body);
+
+  // Si el modelo rechaza alguna opción de pensamiento/esfuerzo, se quita y se reintenta
+  if (r.status === 400) {
+    const m = JSON.stringify(data || {});
+    if (/thinking/i.test(m)) { delete body.thinking; ({ r, data } = await enviar(body)); }
+  }
+  if (r.status === 400) {
+    const m = JSON.stringify(data || {});
+    if (/effort|output_config/i.test(m)) { delete body.output_config; ({ r, data } = await enviar(body)); }
+  }
+
   if (!r.ok) {
     const msg = (data && data.error && data.error.message) || ('Error ' + r.status);
     throw new Error('Claude: ' + msg);
   }
+  if (data.stop_reason === 'max_tokens') {
+    const e = new Error('La respuesta de la IA quedó incompleta.');
+    e.reintentar = true;
+    throw e;
+  }
+  const tool = (data.content || []).find(c => c.type === 'tool_use');
+  if (tool && tool.input && typeof tool.input === 'object' && Object.keys(tool.input).length) {
+    return tool.input;
+  }
   const texto = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
-  return extraerJSON(texto);
+  try { return extraerJSON(texto); }
+  catch { const e = new Error('La IA no devolvió un formato válido.'); e.reintentar = true; throw e; }
+}
+
+// Un reintento automático (con el doble de espacio) si la respuesta llegó mal o incompleta
+async function llamarClaude(system, user, maxTokens, effort) {
+  try {
+    return await pedir(system, user, maxTokens, effort);
+  } catch (e) {
+    if (!e.reintentar) throw e;
+    return await pedir(system, user, maxTokens * 2, effort);
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -219,7 +294,7 @@ Devuelve este JSON:
         return res.status(400).json({ error: 'Acción no válida' });
     }
 
-    const out = await llamarClaude(BASE, user);
+    const out = await llamarClaude(BASE, user, 3000, 'low');
     return res.status(200).json(out);
   } catch (e) {
     return res.status(500).json({ error: e.message || 'Error inesperado' });
